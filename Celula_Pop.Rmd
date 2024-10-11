@@ -1,0 +1,103 @@
+---
+title: "Célula População"
+date: "`r Sys.Date()`"
+bibliography: 'library.bib'
+#csl: biomed-central.csl
+output:
+  html_document:
+    theme: cerulean
+    #cosmo, cerulean, journal, flatly
+    highlight: monochrome
+    toc: true
+    toc_float: false
+    toc_depth: 5
+    code_folding: hide
+    css: styles.css
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library('tidyverse')
+library('openxlsx')
+library('readxl')
+library('kableExtra')
+
+rm_temp<-function (pattern = "^temp_") {
+  temp_objects <- grep(pattern, ls(envir = .GlobalEnv), value = TRUE)
+  if (length(temp_objects) > 0) {
+    rm(list = temp_objects, envir = .GlobalEnv)
+  }
+  invisible(NULL)
+}
+
+```
+
+# Célula População
+
+A população é fundamental para a compreensão da realidade social de qualquer território. Ela representa o denominador básico de todos os indicadores sociais, econômicos e ambientais. Nesse sentido, é indispensável conhecer a estrutura e dinâmica populacional para avaliar corretamente a distribuição de recursos, para a formulação de políticas públicas e para o planejamento urbano adequado. O objetivo principal dessa célula é a sistematizar e espacializar estimativas da população por município, desagregada por idade, sexo e situação de domicílio.
+
+```{r}
+# Inicialização da distribuição territorial da Mesorregião
+dtb_NF<-read_rds('data/processed/dtb_NF.rds')%>%
+  select(munic_co,munic_no)
+```
+
+
+# A mesorregião Norte Fluminense
+
+
+## População Absoluta
+
+Entre 1970 e 2022, a população da Mesorregião Norte Fluminense (MRNF) passou de 485.466 para 920.826 pessoas, um incremento absoluto de 434.380 pessoas. De 2010 para 2022, houve um acréscimo de 71.311 habitantes na região. Entre 2000 e 2010, a população urbana da região cresceu em termos absolutos 153.456 habitantes, enquanto a população rural diminuiu em 3.233 habitantes. Esse movimento reflete uma tendência de urbanização que pode ser observada em várias regiões do Brasil.
+
+Um dos fatores que influenciou a alteração do balanço entre as populações urbana e rural foi a migração externa, que agregou população em núcleos urbanos da MRNF. A partir dos dados coletados, observou-se um expressivo crescimento do número de migrantes na MRNF. De acordo com o Censo Demográfico, residiam na região no ano de 2000, 15.328 imigrantes. Já o Censo de 2010 apontou 111.200 habitantes residentes na mesorregião naturais de outro estado ou de outras regiões do Estado do Rio de Janeiro, um acréscimo de 95.872 imigrantes nesse período. Esse fenômeno foi especialmente notável no município de Macaé, onde uma parte considerável desses imigrantes passou a residir. Cerca de 63% do número total de habitantes acrescidos entre 2000 e 2010 foram imigrantes.
+
+```{r}
+temp_popserie<-read_xlsx('data/raw/tabela202.xlsx',range='A8:R5603',
+                         col_names = int2col(1:18),
+                         col_types=c('text','numeric','text',rep('numeric',15)))%>%
+  filter(A=='MU')%>%
+  mutate(uf=trunc(B/100000),
+         C=str_trim(C))%>%
+  rename(munic_co=B,
+         total1970=D,total1980=G,
+         total1991=J,total2000=M,total2010=P)%>%
+  select(uf,munic_co,total1970,total1980,total1991,total2000,total2010)
+
+temp_pop2022<-read_xlsx('data/raw/tabela4709.xlsx',range='A5:D5601',
+                        col_names = int2col(1:4),
+                        col_types=c('text','numeric','text','numeric'))%>%
+  filter(A=='MU')%>%
+  mutate(uf=trunc(B/100000),
+         C=str_trim(C))%>%
+  rename(munic_co=B,
+         total2022=D)%>%
+  select(uf,munic_co,total2022)
+
+pop_total<-temp_pop2022%>%
+  left_join(temp_popserie,by=c('uf','munic_co'))%>%
+  filter(munic_co %in% munic_NF$munic_co)%>%
+  inner_join(dtb,by=c('munic_co'))%>%
+  bind_rows(
+    summarise(., 
+              munic_no = "Total", 
+              across(starts_with('total'), sum, na.rm = TRUE))
+  )
+
+pop_total%>%
+  select(munic_no,total1970,total1980,total1991,total2000,total2010,total2022)%>%
+  filter(munic_no== 'Total')%>%
+  select(-munic_no)%>%
+  pivot_longer(cols=starts_with('total'),
+               names_to='Ano',
+               values_to='População')%>%
+  mutate(Ano=str_replace(Ano,'total',''))%>%
+  kbl() %>%
+  kable_paper(full_width = F)
+```
+
+
+
+
