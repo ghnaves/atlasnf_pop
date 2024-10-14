@@ -14,41 +14,64 @@ dtb_nf<-dtb%>%
 write_rds(dtb_nf,'data/processed/dtb_nf.rds')
 write_rds(dtb,'data/processed/dtb.rds')
 
-
+## Populacao Total
 temp_popserie<-read_xlsx('data/raw/tabela202.xlsx',range='A8:R5603',col_names = int2col(1:18),
                          col_types=c('text','numeric','text',rep('numeric',15)))%>%
   filter(A=='MU')%>%
+  inner_join(dtb_nf,by=c('B'='munic_co'))%>%
   mutate(uf=trunc(B/100000),
          C=str_trim(C))%>%
   rename(munic_co=B,
-         total1970=D,total1980=G,
-         total1991=J,total2000=M,total2010=P)%>%
-  select(uf,munic_co,total1970,total1980,total1991,total2000,total2010)
+         total_1970=D,urb_1970=E,rur_1970=F,
+         total_1980=G,urb_1980=H,rur_1980=I,
+         total_1991=J,urb_1991=K,rur_1991=L,
+         total_2000=M,urb_2000=N,rur_2000=O,
+         total_2010=P,urb_2010=Q,rur_2010=R)%>%
+  pivot_longer(cols=matches('^(total|urb|rur)'),
+               names_to='tipo_ano',
+               values_to='pop')%>%
+  separate(tipo_ano,c('sit','ano'),sep='_')%>%
+  select(munic_co,uf,ano,sit,pop)
 
 temp_pop2022<-read_xlsx('data/raw/tabela4709.xlsx',range='A5:D5601',col_names = int2col(1:4),
                         col_types=c('text','numeric','text','numeric'))%>%
   filter(A=='MU')%>%
+  inner_join(dtb_nf,by=c('B'='munic_co'))%>%
   mutate(uf=trunc(B/100000),
-         C=str_trim(C))%>%
+         C=str_trim(C),
+         sit='total',ano=2022)%>%
   rename(munic_co=B,
-         total2022=D)%>%
-  select(uf,munic_co,total2022)
+         pop=D)%>%
+  select(uf,munic_co,ano,sit,pop)
 
-pop_total<-temp_pop2022%>%
-  left_join(temp_popserie,by=c('uf','munic_co'))%>%
-  filter(munic_co %in% munic_NF$munic_co)%>%
-  inner_join(dtb,by=c('munic_co'))%>%
-  bind_rows(
-    summarise(., 
-              munic_no = "Total", 
-              across(starts_with('total'), sum, na.rm = TRUE))
-  )
+pop_munic<-temp_popserie%>%
+  rbind(temp_pop2022)
 
-pop_total%>%
+write_rds(pop_munic,'data/processed/pop_munic_nf.rds')
+
+pop_total_nf<-pop_munic%>%
+  group_by(sit,ano)%>%
+  summarise(pop=sum(pop,na.rm = TRUE),.groups = 'drop')%>%
+  pivot_wider(id_cols=sit,names_from = ano,values_from = pop)%>%
+  mutate(sit=case_when(sit=='total'~'Total',
+                       sit=='urb'~'Urbana',
+                       sit=='rur'~'Rural'),
+         ordem=case_when(sit=='Total'~3,
+                         sit=='Urbana'~1,
+                         sit=='Rural'~2))%>%
+  arrange(ordem)%>%
+  select(-ordem)
+
+write_rds(pop_total_nf,'data/processed/pop_total_nf.rds')
+
+
+
+pop_total_nf%>%
   select(munic_no,total1970,total1980,total1991,total2000,total2010,total2022)%>%
   kbl() %>%
   kable_paper(full_width = F)
 
+rm_temp
 
 
 pop_grid<-read_csv('data/raw/POP_MUNIC.csv',skip=4,na=c("", "NA",'...','-'),

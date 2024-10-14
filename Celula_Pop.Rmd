@@ -16,13 +16,14 @@ output:
     df_print: kable
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library('tidyverse')
 library('openxlsx')
 library('readxl')
 library('kableExtra')
+library('scales')
 
 rm_temp<-function (pattern = "^temp_") {
   temp_objects <- grep(pattern, ls(envir = .GlobalEnv), value = TRUE)
@@ -38,66 +39,95 @@ rm_temp<-function (pattern = "^temp_") {
 
 A população é fundamental para a compreensão da realidade social de qualquer território. Ela representa o denominador básico de todos os indicadores sociais, econômicos e ambientais. Nesse sentido, é indispensável conhecer a estrutura e dinâmica populacional para avaliar corretamente a distribuição de recursos, para a formulação de políticas públicas e para o planejamento urbano adequado. O objetivo principal dessa célula é a sistematizar e espacializar estimativas da população por município, desagregada por idade, sexo e situação de domicílio.
 
-```{r}
+```{r warning=FALSE}
 # Inicialização da distribuição territorial da Mesorregião
 dtb_NF<-read_rds('data/processed/dtb_NF.rds')%>%
   select(munic_co,munic_no)
 ```
 
-
 # A mesorregião Norte Fluminense
-
 
 ## População Absoluta
 
-Entre 1970 e 2022, a população da Mesorregião Norte Fluminense (MRNF) passou de 485.466 para 920.826 pessoas, um incremento absoluto de 434.380 pessoas. De 2010 para 2022, houve um acréscimo de 71.311 habitantes na região. Entre 2000 e 2010, a população urbana da região cresceu em termos absolutos 153.456 habitantes, enquanto a população rural diminuiu em 3.233 habitantes. Esse movimento reflete uma tendência de urbanização que pode ser observada em várias regiões do Brasil.
-
-Um dos fatores que influenciou a alteração do balanço entre as populações urbana e rural foi a migração externa, que agregou população em núcleos urbanos da MRNF. A partir dos dados coletados, observou-se um expressivo crescimento do número de migrantes na MRNF. De acordo com o Censo Demográfico, residiam na região no ano de 2000, 15.328 imigrantes. Já o Censo de 2010 apontou 111.200 habitantes residentes na mesorregião naturais de outro estado ou de outras regiões do Estado do Rio de Janeiro, um acréscimo de 95.872 imigrantes nesse período. Esse fenômeno foi especialmente notável no município de Macaé, onde uma parte considerável desses imigrantes passou a residir. Cerca de 63% do número total de habitantes acrescidos entre 2000 e 2010 foram imigrantes.
-
 ```{r}
-temp_popserie<-read_xlsx('data/raw/tabela202.xlsx',range='A8:R5603',
-                         col_names = int2col(1:18),
-                         col_types=c('text','numeric','text',rep('numeric',15)))%>%
-  filter(A=='MU')%>%
-  mutate(uf=trunc(B/100000),
-         C=str_trim(C))%>%
-  rename(munic_co=B,
-         total1970=D,total1980=G,
-         total1991=J,total2000=M,total2010=P)%>%
-  select(uf,munic_co,total1970,total1980,total1991,total2000,total2010)
+pop_total<-read_rds('data/processed/pop_total_nf.rds')
 
-temp_pop2022<-read_xlsx('data/raw/tabela4709.xlsx',range='A5:D5601',
-                        col_names = int2col(1:4),
-                        col_types=c('text','numeric','text','numeric'))%>%
-  filter(A=='MU')%>%
-  mutate(uf=trunc(B/100000),
-         C=str_trim(C))%>%
-  rename(munic_co=B,
-         total2022=D)%>%
-  select(uf,munic_co,total2022)
-
-pop_total<-temp_pop2022%>%
-  left_join(temp_popserie,by=c('uf','munic_co'))%>%
-  filter(munic_co %in% munic_NF$munic_co)%>%
-  inner_join(dtb,by=c('munic_co'))%>%
-  bind_rows(
-    summarise(., 
-              munic_no = "Total", 
-              across(starts_with('total'), sum, na.rm = TRUE))
+temp_numeric<-list(
+    pop1970=pop_total[pop_total$sit=='Total',"1970"]%>%pull(),
+    pop2010=pop_total[pop_total$sit=='Total',"2010"]%>%pull(),
+    pop2022=pop_total[pop_total$sit=='Total',"2022"]%>%pull(),
+    urban2000=pop_total[pop_total$sit=='Urbana',"2000"]%>%pull(),
+    urban2010=pop_total[pop_total$sit=='Urbana',"2010"]%>%pull(),
+    rur2000=pop_total[pop_total$sit=='Rural',"2000"]%>%pull(),
+    rur2010=pop_total[pop_total$sit=='Rural',"2010"]%>%pull()
   )
+temp_text<-list(
+    pop1970=format(temp_numeric$pop1970,big.mark = ".", decimal.mark = ",", nsmall = 0),
+    pop2022=format(temp_numeric$pop2022,big.mark = ".", decimal.mark = ",", nsmall = 0)
+)
+
+temp_diff<-list(
+  diff_1=temp_numeric$pop2022-temp_numeric$pop1970,
+  diff_2=temp_numeric$pop2022-temp_numeric$pop2010,
+  diff_3=temp_numeric$urban2010-temp_numeric$urban2000,
+  diff_4=temp_numeric$rur2010-temp_numeric$rur2000
+)
+
+temp_diff_text<-list(
+  diff_1=format(temp_diff$diff_1,big.mark = ".", decimal.mark = ",", nsmall = 0),
+  diff_2=format(temp_diff$diff_2,big.mark = ".", decimal.mark = ",", nsmall = 0),
+  diff_3=format(temp_diff$diff_3,big.mark = ".", decimal.mark = ",", nsmall = 0),
+  diff_4=format(temp_diff$diff_4,big.mark = ".", decimal.mark = ",", nsmall = 0)
+)
+
 
 pop_total%>%
-  select(munic_no,total1970,total1980,total1991,total2000,total2010,total2022)%>%
-  filter(munic_no== 'Total')%>%
-  select(-munic_no)%>%
-  pivot_longer(cols=starts_with('total'),
-               names_to='Ano',
-               values_to='População')%>%
-  mutate(Ano=str_replace(Ano,'total',''))%>%
   kbl() %>%
   kable_paper(full_width = F)
 ```
 
+Entre 1970 e 2022, a população da Mesorregião Norte Fluminense (MRNF) passou de `r temp_text$pop1970` para `r temp_text$pop2022` pessoas, um incremento absoluto de `r temp_diff_text$diff_1` pessoas. De 2010 para 2022, houve um acréscimo de ```r temp_diff_text$diff_2``` habitantes na região. Entre 2000 e 2010, a população urbana da região cresceu em termos absolutos ```r temp_diff_text$diff_3``` habitantes, enquanto a população rural diminuiu em ```r temp_diff_text$diff_4``` habitantes. Esse movimento reflete uma tendência de urbanização que pode ser observada em várias regiões do Brasil.
+
+Um dos fatores que influenciou a alteração do balanço entre as populações urbana e rural foi a migração externa, que agregou população em núcleos urbanos da MRNF. A partir dos dados coletados, observou-se um expressivo crescimento do número de migrantes na MRNF. De acordo com o Censo Demográfico, residiam na região no ano de 2000, 15.328 imigrantes. Já o Censo de 2010 apontou 111.200 habitantes residentes na mesorregião naturais de outro estado ou de outras regiões do Estado do Rio de Janeiro, um acréscimo de 95.872 imigrantes nesse período. Esse fenômeno foi especialmente notável no município de Macaé, onde uma parte considerável desses imigrantes passou a residir. Cerca de 63% do número total de habitantes acrescidos entre 2000 e 2010 foram imigrantes.
+
+
+## Crescimento Populacional
+```{r}
+rm_temp()
+pop_munic<-read_rds('data/processed/pop_munic_nf.rds')
+
+temp_numeric<-list(
+    pop2000_macae=pop_munic[pop_munic$munic_co==3302403&
+                              pop_munic$ano=='2000'&
+                              pop_munic$sit=='total',"pop"]%>%pull(),
+   pop2010_macae=pop_munic[pop_munic$munic_co==3302403&
+                              pop_munic$ano=='2010'&
+                              pop_munic$sit=='total',"pop"]%>%pull()
+  )
+temp_text<-list(
+    pop2000_macae=format(temp_numeric$pop2000_macae,
+                         big.mark = ".", decimal.mark = ",", nsmall = 0),
+    pop2010_macae=format(temp_numeric$pop2010_macae,
+                         big.mark = ".", decimal.mark = ",", nsmall = 0)
+)
+
+temp_diff<-list(
+  diff_1=temp_numeric$pop2010_macae-temp_numeric$pop2000_macae
+)
+
+temp_diff_text<-list(
+  diff_1=format(temp_diff$diff_1,big.mark = ".", decimal.mark = ",", nsmall = 0)
+)
+
+
+pop_total%>%
+  kbl() %>%
+  kable_paper(full_width = F)
+
+```
 
 
 
+A população da região aumentou a taxas mais relevantes a partir da década de 1980, em decorrência das atividades de exploração e produção de petróleo na Bacia de Campos. Esse fenômeno contribuiu significativamente para a migração de pessoas para a região, com foco principalmente em Macaé, que viu sua população crescer de ```r temp_text$pop2000_macae``` habitantes em 2000 para ```r temp_text$pop2010_macae``` em 2010, registrando um acréscimo de ```r temp_diff_text$diff_1``` habitantes.
+
+Se mantidos os números calculados pelo IBGE em 2022, o crescimento populacional da região é praticamente igual ao crescimento da população brasileira e mais que o dobro do crescimento da população do estado do Rio de Janeiro.
