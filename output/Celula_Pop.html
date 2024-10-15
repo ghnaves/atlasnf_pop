@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2024-10-11" />
+<meta name="date" content="2024-10-15" />
 
 <title>Célula População</title>
 
@@ -616,6 +616,29 @@ margin-right: -30px;
 
 
 
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 1em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
 
 <link rel="stylesheet" href="styles.css" type="text/css" />
 
@@ -726,7 +749,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">Célula População</h1>
-<h4 class="date">2024-10-11</h4>
+<h4 class="date">2024-10-15</h4>
 
 </div>
 
@@ -741,6 +764,7 @@ Fluminense</a>
 Absoluta</a></li>
 <li><a href="#crescimento-populacional" id="toc-crescimento-populacional">Crescimento Populacional</a></li>
 </ul></li>
+<li><a href="#referências" id="toc-referências">Referências</a></li>
 </ul>
 </div>
 
@@ -754,49 +778,48 @@ corretamente a distribuição de recursos, para a formulação de políticas
 públicas e para o planejamento urbano adequado. O objetivo principal
 dessa célula é a sistematizar e espacializar estimativas da população
 por município, desagregada por idade, sexo e situação de domicílio.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Inicialização da distribuição territorial da Mesorregião</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>dtb_NF<span class="ot">&lt;-</span><span class="fu">read_rds</span>(<span class="st">&#39;data/processed/dtb_NF.rds&#39;</span>)<span class="sc">%&gt;%</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  <span class="fu">select</span>(munic_co,munic_no)</span></code></pre></div>
 </div>
 <div id="a-mesorregião-norte-fluminense" class="section level1">
 <h1>A mesorregião Norte Fluminense</h1>
 <div id="população-absoluta" class="section level2">
 <h2>População Absoluta</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>pop_total<span class="ot">&lt;-</span><span class="fu">read_rds</span>(<span class="st">&#39;data/processed/pop_total_nf.rds&#39;</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>temp_numeric<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="at">pop1970=</span>pop_total[pop_total<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Total&#39;</span>,<span class="st">&quot;1970&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="at">pop2010=</span>pop_total[pop_total<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Total&#39;</span>,<span class="st">&quot;2010&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>    <span class="at">pop2022=</span>pop_total[pop_total<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Total&#39;</span>,<span class="st">&quot;2022&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    <span class="at">urban2000=</span>pop_total[pop_total<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Urbana&#39;</span>,<span class="st">&quot;2000&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>    <span class="at">urban2010=</span>pop_total[pop_total<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Urbana&#39;</span>,<span class="st">&quot;2010&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>    <span class="at">rur2000=</span>pop_total[pop_total<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Rural&#39;</span>,<span class="st">&quot;2000&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>    <span class="at">rur2010=</span>pop_total[pop_total<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Rural&#39;</span>,<span class="st">&quot;2010&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>()</span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  )</span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>temp_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>    <span class="at">pop1970=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop1970,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>    <span class="at">pop2022=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop2022,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>)</span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>)</span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>temp_diff<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="at">diff_1=</span>temp_numeric<span class="sc">$</span>pop2022<span class="sc">-</span>temp_numeric<span class="sc">$</span>pop1970,</span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="at">diff_2=</span>temp_numeric<span class="sc">$</span>pop2022<span class="sc">-</span>temp_numeric<span class="sc">$</span>pop2010,</span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="at">diff_3=</span>temp_numeric<span class="sc">$</span>urban2010<span class="sc">-</span>temp_numeric<span class="sc">$</span>urban2000,</span>
-<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="at">diff_4=</span>temp_numeric<span class="sc">$</span>rur2010<span class="sc">-</span>temp_numeric<span class="sc">$</span>rur2000</span>
-<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>)</span>
-<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a></span>
-<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>temp_diff_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>  <span class="at">diff_1=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_1,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
-<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>  <span class="at">diff_2=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_2,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
-<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>  <span class="at">diff_3=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_3,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
-<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>  <span class="at">diff_4=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_4,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>)</span>
-<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>)</span>
-<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a></span>
-<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a></span>
-<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>pop_total<span class="sc">%&gt;%</span></span>
-<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a>  <span class="fu">kbl</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a>  <span class="fu">kable_paper</span>(<span class="at">full_width =</span> F)</span></code></pre></div>
-<table class=" lightable-paper" style="color: black; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>pop_total_nf<span class="ot">&lt;-</span><span class="fu">read_rds</span>(<span class="fu">here</span>(<span class="st">&#39;data/processed&#39;</span>,<span class="st">&#39;pop_total_nf.rds&#39;</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>temp_numeric<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    <span class="at">pop1970=</span>pop_total_nf[pop_total_nf<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Total&#39;</span>,<span class="st">&quot;1970&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>    <span class="at">pop2010=</span>pop_total_nf[pop_total_nf<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Total&#39;</span>,<span class="st">&quot;2010&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>    <span class="at">pop2022=</span>pop_total_nf[pop_total_nf<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Total&#39;</span>,<span class="st">&quot;2022&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>    <span class="at">urban2000=</span>pop_total_nf[pop_total_nf<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Urbana&#39;</span>,<span class="st">&quot;2000&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>    <span class="at">urban2010=</span>pop_total_nf[pop_total_nf<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Urbana&#39;</span>,<span class="st">&quot;2010&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>    <span class="at">rur2000=</span>pop_total_nf[pop_total_nf<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Rural&#39;</span>,<span class="st">&quot;2000&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>    <span class="at">rur2010=</span>pop_total_nf[pop_total_nf<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;Rural&#39;</span>,<span class="st">&quot;2010&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>()</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>  )</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>temp_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>    <span class="at">pop1970=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop1970,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>    <span class="at">pop2022=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop2022,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>)</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>temp_diff<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>  <span class="at">diff_1=</span>temp_numeric<span class="sc">$</span>pop2022<span class="sc">-</span>temp_numeric<span class="sc">$</span>pop1970,</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>  <span class="at">diff_2=</span>temp_numeric<span class="sc">$</span>pop2022<span class="sc">-</span>temp_numeric<span class="sc">$</span>pop2010,</span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>  <span class="at">diff_3=</span>temp_numeric<span class="sc">$</span>urban2010<span class="sc">-</span>temp_numeric<span class="sc">$</span>urban2000,</span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>  <span class="at">diff_4=</span>temp_numeric<span class="sc">$</span>rur2010<span class="sc">-</span>temp_numeric<span class="sc">$</span>rur2000</span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a>)</span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>temp_diff_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a>  <span class="at">diff_1=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_1,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a>  <span class="at">diff_2=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_2,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a>  <span class="at">diff_3=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_3,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>  <span class="at">diff_4=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_4,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a>)</span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>pop_total_nf<span class="sc">%&gt;%</span></span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>  <span class="fu">kbl</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>  <span class="fu">kable_paper</span>(<span class="at">full_width =</span> F) <span class="sc">%&gt;%</span></span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a>  <span class="fu">footnote</span>(<span class="at">general =</span> <span class="st">&quot;Fonte: Censos Demográficos [@ibge2023]&quot;</span>,</span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a>           <span class="at">general_title =</span> <span class="st">&quot;&quot;</span>)</span></code></pre></div>
+<table class=" lightable-paper" style="color: black; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;border-bottom: 0;">
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -893,15 +916,24 @@ Total
 </td>
 </tr>
 </tbody>
+<tfoot>
+<tr>
+<td style="padding: 0; " colspan="100%">
+<sup></sup> Fonte: Censos Demográficos <span class="citation">(IBGE,
+2023)</span>
+</td>
+</tr>
+</tfoot>
 </table>
 <p>Entre 1970 e 2022, a população da Mesorregião Norte Fluminense (MRNF)
 passou de 486.446 para 920.826 pessoas, um incremento absoluto de
-434.380 pessoas. De 2010 para 2022, houve um acréscimo de
-<code>71.311</code> habitantes na região. Entre 2000 e 2010, a população
-urbana da região cresceu em termos absolutos <code>153.967</code>
-habitantes, enquanto a população rural diminuiu em <code>-3.235</code>
-habitantes. Esse movimento reflete uma tendência de urbanização que pode
-ser observada em várias regiões do Brasil.</p>
+434.380 pessoas. De 2010 para Entre 1970 e 2022, a população da
+Mesorregião Norte Fluminense (MRNF) passou de para um incremento
+absoluto de 71.311 habitantes na região. Entre 2000 e 2010, a população
+urbana da região cresceu em termos absolutos 153.967 habitantes,
+enquanto a população rural diminuiu em -3.235 habitantes. Esse movimento
+reflete uma tendência de urbanização que pode ser observada em várias
+regiões do Brasil.</p>
 <p>Um dos fatores que influenciou a alteração do balanço entre as
 populações urbana e rural foi a migração externa, que agregou população
 em núcleos urbanos da MRNF. A partir dos dados coletados, observou-se um
@@ -916,145 +948,209 @@ total de habitantes acrescidos entre 2000 e 2010 foram imigrantes.</p>
 </div>
 <div id="crescimento-populacional" class="section level2">
 <h2>Crescimento Populacional</h2>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">rm_temp</span>()</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>pop_munic<span class="ot">&lt;-</span><span class="fu">read_rds</span>(<span class="st">&#39;data/processed/pop_munic_nf.rds&#39;</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>temp_numeric<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="at">pop2000_macae=</span>pop_munic[pop_munic<span class="sc">$</span>munic_co<span class="sc">==</span><span class="dv">3302403</span><span class="sc">&amp;</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>                              pop_munic<span class="sc">$</span>ano<span class="sc">==</span><span class="st">&#39;2000&#39;</span><span class="sc">&amp;</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>                              pop_munic<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;total&#39;</span>,<span class="st">&quot;pop&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>(),</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>   <span class="at">pop2010_macae=</span>pop_munic[pop_munic<span class="sc">$</span>munic_co<span class="sc">==</span><span class="dv">3302403</span><span class="sc">&amp;</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>                              pop_munic<span class="sc">$</span>ano<span class="sc">==</span><span class="st">&#39;2010&#39;</span><span class="sc">&amp;</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>                              pop_munic<span class="sc">$</span>sit<span class="sc">==</span><span class="st">&#39;total&#39;</span>,<span class="st">&quot;pop&quot;</span>]<span class="sc">%&gt;%</span><span class="fu">pull</span>()</span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  )</span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>temp_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>    <span class="at">pop2000_macae=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop2000_macae,</span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>                         <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>    <span class="at">pop2010_macae=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop2010_macae,</span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>                         <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>)</span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>)</span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>temp_diff<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>  <span class="at">diff_1=</span>temp_numeric<span class="sc">$</span>pop2010_macae<span class="sc">-</span>temp_numeric<span class="sc">$</span>pop2000_macae</span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>)</span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>temp_diff_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>  <span class="at">diff_1=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_1,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>)</span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>)</span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>pop_total<span class="sc">%&gt;%</span></span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  <span class="fu">kbl</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>  <span class="fu">kable_paper</span>(<span class="at">full_width =</span> F)</span></code></pre></div>
-<table class=" lightable-paper" style="color: black; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">rm_temp</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>growthratio_brrjnf<span class="ot">&lt;-</span><span class="fu">read_rds</span>(<span class="fu">here</span>(<span class="st">&#39;data/processed&#39;</span>,<span class="st">&#39;growthratio_brrjnf.rds&#39;</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="fu">filter</span>(ut_co <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">33</span>,<span class="dv">3302</span>,<span class="dv">3302403</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>pop_brrjnf<span class="ot">&lt;-</span><span class="fu">read_rds</span>(<span class="fu">here</span>(<span class="st">&#39;data/processed&#39;</span>,<span class="st">&#39;pop_brrjnf.rds&#39;</span>))<span class="sc">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="fu">filter</span>(ut_co <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">33</span>,<span class="dv">3302</span>,<span class="dv">3302403</span>))</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>temp_numeric<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>    <span class="at">pop2000_macae=</span>pop_brrjnf<span class="sc">%&gt;%</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>      <span class="fu">filter</span>(ut_co<span class="sc">==</span><span class="dv">3302403</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>      <span class="fu">select</span>(total2000)<span class="sc">%&gt;%</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>      <span class="fu">pull</span>(),</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>   <span class="at">pop2010_macae=</span>pop_brrjnf<span class="sc">%&gt;%</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>      <span class="fu">filter</span>(ut_co<span class="sc">==</span><span class="dv">3302403</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>      <span class="fu">select</span>(total2010)<span class="sc">%&gt;%</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>      <span class="fu">pull</span>(),</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>   <span class="at">gr2010_2022_nf=</span>growthratio_brrjnf<span class="sc">%&gt;%</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>     <span class="fu">filter</span>(ut_co<span class="sc">==</span><span class="dv">3302</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>     <span class="fu">select</span>(gr2010_2022)<span class="sc">%&gt;%</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>     <span class="fu">pull</span>(),</span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>   <span class="at">gr2010_2022_br=</span>growthratio_brrjnf<span class="sc">%&gt;%</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>     <span class="fu">filter</span>(ut_co<span class="sc">==</span><span class="dv">1</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>     <span class="fu">select</span>(gr2010_2022)<span class="sc">%&gt;%</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>     <span class="fu">pull</span>(),</span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>   <span class="at">gr2010_2022_rj=</span>growthratio_brrjnf<span class="sc">%&gt;%</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>     <span class="fu">filter</span>(ut_co<span class="sc">==</span><span class="dv">33</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>     <span class="fu">select</span>(gr2010_2022)<span class="sc">%&gt;%</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>     <span class="fu">pull</span>()</span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>  )</span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>temp_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>    <span class="at">pop2000_macae=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop2000_macae,</span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a>                         <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a>    <span class="at">pop2010_macae=</span><span class="fu">format</span>(temp_numeric<span class="sc">$</span>pop2010_macae,</span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a>                         <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>),</span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a>    <span class="at">gr2010_2022_rj=</span><span class="fu">percent</span>(temp_numeric<span class="sc">$</span>gr2010_2022_rj,</span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a>                                  <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, </span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a>                                  <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>,</span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a>                                  <span class="at">accuracy=</span><span class="fl">0.01</span>),</span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a>    <span class="at">gr2010_2022_nf=</span><span class="fu">percent</span>(temp_numeric<span class="sc">$</span>gr2010_2022_nf,</span>
+<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a>                                  <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, </span>
+<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a>                                  <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>,</span>
+<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a>                                  <span class="at">accuracy=</span><span class="fl">0.01</span>),</span>
+<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a>    <span class="at">gr2010_2022_br=</span><span class="fu">percent</span>(temp_numeric<span class="sc">$</span>gr2010_2022_br,</span>
+<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a>                                  <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, </span>
+<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a>                                  <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>,</span>
+<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a>                                  <span class="at">accuracy=</span><span class="fl">0.01</span>)</span>
+<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a>    )</span>
+<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a></span>
+<span id="cb2-50"><a href="#cb2-50" tabindex="-1"></a>temp_diff<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb2-51"><a href="#cb2-51" tabindex="-1"></a>  <span class="at">diff_1=</span>temp_numeric<span class="sc">$</span>pop2010_macae<span class="sc">-</span>temp_numeric<span class="sc">$</span>pop2000_macae</span>
+<span id="cb2-52"><a href="#cb2-52" tabindex="-1"></a>)</span>
+<span id="cb2-53"><a href="#cb2-53" tabindex="-1"></a></span>
+<span id="cb2-54"><a href="#cb2-54" tabindex="-1"></a>temp_diff_text<span class="ot">&lt;-</span><span class="fu">list</span>(</span>
+<span id="cb2-55"><a href="#cb2-55" tabindex="-1"></a>  <span class="at">diff_1=</span><span class="fu">format</span>(temp_diff<span class="sc">$</span>diff_1,<span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>, <span class="at">nsmall =</span> <span class="dv">0</span>)</span>
+<span id="cb2-56"><a href="#cb2-56" tabindex="-1"></a>)</span>
+<span id="cb2-57"><a href="#cb2-57" tabindex="-1"></a></span>
+<span id="cb2-58"><a href="#cb2-58" tabindex="-1"></a></span>
+<span id="cb2-59"><a href="#cb2-59" tabindex="-1"></a>growthratio_brrjnf<span class="sc">%&gt;%</span></span>
+<span id="cb2-60"><a href="#cb2-60" tabindex="-1"></a>  <span class="fu">filter</span>(ut_co <span class="sc">!=</span> <span class="dv">3302403</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb2-61"><a href="#cb2-61" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="dv">3</span><span class="sc">:</span><span class="dv">7</span>,<span class="sc">~</span><span class="fu">percent_format</span>(<span class="at">scale=</span><span class="dv">100</span>,</span>
+<span id="cb2-62"><a href="#cb2-62" tabindex="-1"></a>                                    <span class="at">big.mark =</span> <span class="st">&quot;.&quot;</span>, </span>
+<span id="cb2-63"><a href="#cb2-63" tabindex="-1"></a>                                    <span class="at">decimal.mark =</span> <span class="st">&quot;,&quot;</span>)(.)))<span class="sc">%&gt;%</span></span>
+<span id="cb2-64"><a href="#cb2-64" tabindex="-1"></a>  <span class="fu">kbl</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-65"><a href="#cb2-65" tabindex="-1"></a>  <span class="fu">kable_paper</span>(<span class="at">full_width =</span> F) <span class="sc">%&gt;%</span></span>
+<span id="cb2-66"><a href="#cb2-66" tabindex="-1"></a>  <span class="fu">footnote</span>(<span class="at">general =</span> <span class="st">&quot;Fonte: Censos Demográficos [@ibge2023]&quot;</span>,</span>
+<span id="cb2-67"><a href="#cb2-67" tabindex="-1"></a>           <span class="at">general_title =</span> <span class="st">&quot;&quot;</span>)</span></code></pre></div>
+<table class=" lightable-paper" style="color: black; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;border-bottom: 0;">
 <thead>
 <tr>
+<th style="text-align:right;">
+ut_co
+</th>
 <th style="text-align:left;">
-sit
+ut
 </th>
-<th style="text-align:right;">
-1970
+<th style="text-align:left;">
+gr2010_2022
 </th>
-<th style="text-align:right;">
-1980
+<th style="text-align:left;">
+gr2000_2010
 </th>
-<th style="text-align:right;">
-1991
+<th style="text-align:left;">
+gr1991_2000
 </th>
-<th style="text-align:right;">
-2000
+<th style="text-align:left;">
+gr1980_1991
 </th>
-<th style="text-align:right;">
-2010
-</th>
-<th style="text-align:right;">
-2022
+<th style="text-align:left;">
+gr1970_1980
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td style="text-align:right;">
+1
+</td>
 <td style="text-align:left;">
-Urbana
+Brasil
 </td>
-<td style="text-align:right;">
-244730
+<td style="text-align:left;">
+0,52%
 </td>
-<td style="text-align:right;">
-304569
+<td style="text-align:left;">
+1,16%
 </td>
-<td style="text-align:right;">
-484346
+<td style="text-align:left;">
+1,64%
 </td>
-<td style="text-align:right;">
-594713
+<td style="text-align:left;">
+1,91%
 </td>
-<td style="text-align:right;">
-748680
-</td>
-<td style="text-align:right;">
-NA
+<td style="text-align:left;">
+2,45%
 </td>
 </tr>
 <tr>
+<td style="text-align:right;">
+33
+</td>
 <td style="text-align:left;">
-Rural
+Rio de Janeiro
 </td>
-<td style="text-align:right;">
-241716
+<td style="text-align:left;">
+0,03%
 </td>
-<td style="text-align:right;">
-223021
+<td style="text-align:left;">
+1,05%
 </td>
-<td style="text-align:right;">
-127230
+<td style="text-align:left;">
+1,31%
 </td>
-<td style="text-align:right;">
-104070
+<td style="text-align:left;">
+1,15%
 </td>
-<td style="text-align:right;">
-100835
-</td>
-<td style="text-align:right;">
-NA
+<td style="text-align:left;">
+2,27%
 </td>
 </tr>
 <tr>
+<td style="text-align:right;">
+3302
+</td>
 <td style="text-align:left;">
-Total
+Norte Fluminense
 </td>
-<td style="text-align:right;">
-486446
+<td style="text-align:left;">
+0,67%
 </td>
-<td style="text-align:right;">
-527590
+<td style="text-align:left;">
+1,95%
 </td>
-<td style="text-align:right;">
-611576
+<td style="text-align:left;">
+1,50%
 </td>
-<td style="text-align:right;">
-698783
+<td style="text-align:left;">
+1,34%
 </td>
-<td style="text-align:right;">
-849515
-</td>
-<td style="text-align:right;">
-920826
+<td style="text-align:left;">
+0,81%
 </td>
 </tr>
 </tbody>
+<tfoot>
+<tr>
+<td style="padding: 0; " colspan="100%">
+<sup></sup> Fonte: Censos Demográficos <span class="citation">(IBGE,
+2023)</span>
+</td>
+</tr>
+</tfoot>
 </table>
 <p>A população da região aumentou a taxas mais relevantes a partir da
-década de 1980, em decorrência das atividades de exploração e produção
-de petróleo na Bacia de Campos. Esse fenômeno contribuiu
-significativamente para a migração de pessoas para a região, com foco
-principalmente em Macaé, que viu sua população crescer de
-<code>132.461</code> habitantes em 2000 para <code>206.728</code> em
-2010, registrando um acréscimo de <code>74.267</code> habitantes.</p>
-<p>Se mantidos os números calculados pelo IBGE em 2022, o crescimento
-populacional da região é praticamente igual ao crescimento da população
-brasileira e mais que o dobro do crescimento da população do estado do
-Rio de Janeiro.</p>
+década de <strong>1980</strong>, em decorrência das atividades de
+<strong>exploração e produção de petróleo na Bacia de Campos</strong>.
+Esse fenômeno contribuiu significativamente para a migração de pessoas
+para a região, com foco principalmente em <strong>Macaé</strong>, que
+viu sua população crescer de <code>132.461</code> habitantes em 2000
+para <code>206.728</code> em 2010, registrando um acréscimo de
+<code>74.267</code> habitantes.</p>
+<p>O crescimento populacional da região no período entre 2010 e 2022
+(<code>0,67%</code>) foi similar ao crescimento da população brasileira
+(<code>0,52%</code>). De forma comparativa, a região cresceu em um ritmo
+forte, se comparado com a população do estado do Rio de Janeiro, cujo
+crescimento foi próximo a zero (<code>0,03%</code>). Esse crescimento
+expressivo da população na região é um reflexo da imigração, seja em
+busca de trabalho ou por familiares acompanhando um migrante principal.
+Adiconalmente, o crescimento também é consequencia do efeito indireto da
+imigração que são os filhos dos migrantes que nasceram no destino e que
+não são captados como migrantes pelos censos.</p>
+<p>Códigos fonte desta página estão disponíveis no repositorio <a href="https://github.com/ghnaves/atlasnf_pop">ghnaves/atlasnf_pop</a> do
+Github</p>
+</div>
+</div>
+<div id="referências" class="section level1 unnumbered">
+<h1 class="unnumbered">Referências</h1>
+<div id="refs" class="references csl-bib-body" entry-spacing="1">
+<div id="ref-ibge2023" class="csl-entry">
+IBGE. <em><span>SIDRA</span> | <span>Webpage</span></em>. Disponível em:
+&lt;<a href="https://sidra.ibge.gov.br/pesquisa/censo-demografico">https://sidra.ibge.gov.br/pesquisa/censo-demografico</a>&gt;.
+Acesso em: 10 jul. 2023.
+</div>
 </div>
 </div>
 

@@ -3,6 +3,7 @@ library('openxlsx')
 library('readxl')
 library('kableExtra')
 
+#Inicialização arquivos auxiliares
 dtb<-read_xls('data/raw/RELATORIO_DTB_BRASIL_MUNICIPIO.xls',
               col_names=c('uf_co','uf_no','inter_co','inter_no','imed_co','imed_nm',
                           'meso_co','meso_no','micro_co','micro_no','munic_co5','munic_co','munic_no'),
@@ -14,7 +15,7 @@ dtb_nf<-dtb%>%
 write_rds(dtb_nf,'data/processed/dtb_nf.rds')
 write_rds(dtb,'data/processed/dtb.rds')
 
-## Populacao Total
+## Populacao Absoluta
 temp_popserie<-read_xlsx('data/raw/tabela202.xlsx',range='A8:R5603',col_names = int2col(1:18),
                          col_types=c('text','numeric','text',rep('numeric',15)))%>%
   filter(A=='MU')%>%
@@ -49,6 +50,114 @@ pop_munic<-temp_popserie%>%
 
 write_rds(pop_munic,'data/processed/pop_munic_nf.rds')
 
+#Crescimento populacional
+
+## IMPORTANTE: a polulação em 1970, totalizada, para o estado do Rio de Janeiro está
+### incorreta (arquivo 'Tabela 200.xlsx'). O erro é aparentemente do SIDRA (IBGE).
+### A população do estado foi obtida pela soma das populações dos municípios ('tabela 200 (1).xlsx')
+
+temp_200<-read_xlsx('data/sidra.igbe.org.br/tabela200 (1).xlsx',range='A7:R100',
+                      col_names = int2col(1:18),
+                      col_types=c('text','numeric','text',rep('numeric',15)))%>%
+  left_join(dtb,by=c('B'='munic_co'))%>%
+  rename('ut_co'='B','ut_no'='C',
+         'total1970'='D','total1980'='G','total1991'='J','total2000'='M','total2010'='P',
+         'urb1970'='E','urb1980'='H','urb1991'='K','urb2000'='N','urb2010'='Q',
+         'rur1970'='F','rur1980'='I','rur1991'='L','rur2000'='O','rur2010'='R')
+  
+
+temp_nf<-temp_200 %>%
+  filter(meso_no=='Norte Fluminense')%>%
+  group_by(meso_no) %>%
+  summarise(across(starts_with(c("total", "urb", "rur")), sum, na.rm = TRUE),.groups = 'drop')%>%
+  mutate(ut_co=3302)%>%
+  select(ut_co,meso_no,total1970:rur2010)%>%
+  rename('ut'='meso_no')
+
+temp_rj<-temp_200 %>%
+  filter(!(ut_no %in% c("Brasil","Rio de Janeiro")))%>%
+  summarise(across(starts_with(c("total", "urb", "rur")), sum, na.rm = TRUE))%>%
+  mutate(ut = "Rio de Janeiro",ut_co=33)%>%
+  select(ut_co,ut,total1970:rur2010)
+
+temp_munic<-temp_200%>%
+  filter(!(ut_no %in% c("Brasil","Rio de Janeiro")))%>%
+  mutate(ut = munic_no)%>%
+  select(ut_co,ut,total1970:rur2010)
+  
+temp_ate2010<-temp_200%>%
+  filter(ut_no == "Brasil") %>%
+  select(ut_co,ut_no,total1970:rur2010)%>%
+  rename(ut=ut_no)%>%
+  rbind(temp_rj)%>%
+  rbind(temp_nf)%>%
+  rbind(temp_munic)
+
+temp_4714<-read_xlsx('data/sidra.igbe.org.br/tabela4714.xlsx',range='A5:C98',
+                  col_names = c('A', 'B','total2022'),
+                  col_types=c('numeric','text','numeric'))%>%
+  left_join(dtb,by=c('A'='munic_co'))
+
+temp_nf<-temp_4714 %>%
+  filter(meso_no=='Norte Fluminense')%>%
+  group_by(meso_no) %>%
+  summarise(across(starts_with(c("total", "urb", "rur")), sum, na.rm = TRUE),.groups = 'drop')%>%
+  mutate(ut_co=3302)%>%
+  select(ut_co,meso_no,total2022)%>%
+  rename('ut'='meso_no')
+
+temp_2022<-temp_4714%>%
+  mutate(ut = B,ut_co=A)%>%
+  select(ut_co,ut,total2022)%>%
+  rbind(temp_nf)%>%
+  mutate(ordem=case_when(ut_co==3302~3,
+                         ut_co==1~1,
+                         ut_co==33~2,
+                         TRUE~4))%>%
+  arrange(ordem)%>%
+  select(-ordem,-ut)
+  
+
+pop_brrjnf<-temp_ate2010%>%
+  inner_join(temp_2022,by='ut_co')
+  
+write_rds(pop_brrjnf,'data/processed/pop_brrjnf.rds')
+
+growthratio_brrjnf<-pop_brrjnf%>%
+  mutate(gr2010_2022=
+           1/time_length(interval(dmy('1-8-2010'), dmy('1-8-2022')), "years")*
+           log(total2022/total2010),
+         gr2000_2010=
+           1/time_length(interval(dmy('1-8-2000'), dmy('1-8-2010')), "years")*
+           log(total2010/total2000),
+         gr1991_2000=
+           1/time_length(interval(dmy('1-9-1991'), dmy('1-8-2000')), "years")*
+           log(total2000/total1991),
+         gr1980_1991=
+           1/time_length(interval(dmy('1-9-1980'), dmy('1-9-1991')), "years")*
+           log(total1991/total1980),
+         gr1970_1980=
+           1/time_length(interval(dmy('1-9-1970'), dmy('1-9-1980')), "years")*
+           log(total1980/total1970))%>%
+  select(ut_co,ut,gr2010_2022,gr2000_2010,gr1991_2000,gr1980_1991,gr1970_1980)
+
+growthratio_brrjnf%>%
+  mutate(across(2:6,~percent_format(scale=100,
+                                    big.mark = ".", 
+                                    decimal.mark = ",",
+                                    accuracy=0.01)(.)))%>%
+  kbl() %>%
+  kable_paper(full_width = F) %>%
+  footnote(general = "Fonte: Censos Demográficos [@ibge2023]",
+           general_title = "")
+
+
+write_rds(growthratio_brrjnf,'data/processed/growthratio_brrjnf.rds')
+  
+
+
+
+#População por municípios
 pop_total_nf<-pop_munic%>%
   group_by(sit,ano)%>%
   summarise(pop=sum(pop,na.rm = TRUE),.groups = 'drop')%>%
@@ -67,7 +176,6 @@ write_rds(pop_total_nf,'data/processed/pop_total_nf.rds')
 
 
 pop_total_nf%>%
-  select(munic_no,total1970,total1980,total1991,total2000,total2010,total2022)%>%
   kbl() %>%
   kable_paper(full_width = F)
 

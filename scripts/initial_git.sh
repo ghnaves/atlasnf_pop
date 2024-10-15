@@ -26,3 +26,7 @@ git status
 #Se tiver arquivos não rastreados, adicione-os ao repositório
 # ==> Changes not staged for commit:
 git add .
+git push origin main #--force
+
+
+
