@@ -234,10 +234,18 @@ temp_ggdf<-pop_grid_nf%>%
   ungroup()%>%
   mutate(rel=if_else(sex=='Homens',-pop/total,pop/total))
 
-ggplot(data=temp_ggdf,aes(x=grid,y=rel,fill=sex))+
+temp_gg<-ggplot(data=temp_ggdf,aes(x=grid,y=rel,fill=sex))+
   geom_bar(stat='identity',position='stack')+
   coord_flip()+
-  facet_wrap(~ano)
+  facet_wrap(~ano)+
+  labs(title='Pirâmides Etárias',x= 'Grupos de idade')+
+  scale_fill_manual(name='Sexo',values=rev(pal_startrek()(2)))+
+  scale_y_continuous(labels = percent_format(scale=100),
+                     name='População (%)')+
+  theme_ipsum()
+
+ggsave(here('output','plots','piramides.jpeg'),
+       temp_gg,width=30,height=21,device='jpeg',dpi=150,units='cm')
 
 #População por município
 pop_total_nf<-pop_munic%>%
