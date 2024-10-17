@@ -4,7 +4,7 @@ library('readxl')
 library('kableExtra')
 
 #Inicialização arquivos auxiliares
-dtb<-read_xls('data/raw/RELATORIO_DTB_BRASIL_MUNICIPIO.xls',
+dtb<-openXL('data/raw/RELATORIO_DTB_BRASIL_MUNICIPIO.xls',
               col_names=c('uf_co','uf_no','inter_co','inter_no','imed_co','imed_nm',
                           'meso_co','meso_no','micro_co','micro_no','munic_co5','munic_co','munic_no'),
               col_types=c(rep(c('numeric','text'),5),'numeric','numeric','text'),skip=1)
@@ -155,9 +155,91 @@ growthratio_brrjnf%>%
 write_rds(growthratio_brrjnf,'data/processed/growthratio_brrjnf.rds')
   
 
+#População por idade e sexo
+temp_linhas <- read_lines("data/sidra.igbe.org.br/tabela9514.csv")
+temp_eof <- which(str_detect(temp_linhas,"Fonte:"))
+if(temp_eof>0){
+  temp_9514<-read_csv('data/sidra.igbe.org.br/tabela9514.csv',skip=3,
+                      col_names = c('munic_co', 'munic_no','skip','grid','ano','sex','pop'),
+                      col_types=cols(
+                        munic_co = col_double(),
+                        munic_no = col_character(),
+                        skip = col_skip(),
+                        grid = col_character(),
+                        sex = col_character(),
+                        ano = col_double(),
+                        pop = col_double()),
+                      n_max = temp_eof-4)
+}
+temp_2022<-temp_9514%>%  
+  mutate(grid =str_replace_all(grid, c(" a " = "-", " anos" = ""," ou mais"="+")))%>%
+  mutate(grid=if_else(grid %in% c("80-84","85-89","90-94","95-99","100+"),
+                      '80+',grid))%>%
+  group_by(munic_co,munic_no,grid,ano,sex)%>%
+  summarise(pop=sum(pop,na.rm = TRUE),.groups = 'drop')
 
 
-#População por municípios
+temp_linhas <- read_lines("data/sidra.igbe.org.br/tabela200.csv")
+temp_eof <- which(str_detect(temp_linhas,"Fonte:"))
+if(temp_eof>0){
+  temp_200<-read_csv('data/sidra.igbe.org.br/tabela200.csv',skip=4,
+                      col_names = c('munic_co', 'munic_no','grid','ano','sex','pop'),
+                      col_types=cols(
+                        munic_co = col_double(),
+                        munic_no = col_character(),
+                        grid = col_character(),
+                        sex = col_character(),
+                        ano = col_double(),
+                        pop = col_double()),
+                      n_max = temp_eof-5)
+}
+temp_1<-temp_200%>%  
+  mutate(grid =str_replace_all(grid, c(" a " = "-", " anos" = ""," ou mais"="+")))%>%
+  mutate(grid=if_else(grid %in% c("80-84","85-89","90-94","95-99","100+"),
+                      '80+',grid))%>%
+  group_by(munic_co,munic_no,grid,ano,sex)%>%
+  summarise(pop=sum(pop,na.rm = TRUE),.groups = 'drop')
+
+temp_<-temp_1%>%
+  filter(grid=='Idade ignorada')%>%
+  select(-grid)%>%
+  rename(ign=pop)
+
+temp_serie<-temp_1%>%
+  filter(grid!='Idade ignorada')%>%
+  left_join(temp_,by=join_by(munic_co,munic_no,ano,sex))%>%
+  group_by(munic_co,munic_no,ano,sex)%>%
+  mutate(total=sum(pop,na.rm = TRUE))%>%
+  mutate(pop=if_else(total==0,pop,pop+ign*pop/total))%>%
+  select(munic_co,munic_no,ano,grid,sex,pop)%>%
+  ungroup()
+
+pop_grid_nf<-temp_serie%>%
+  rbind(temp_2022)%>%
+  inner_join(dtb_nf,by=c('munic_co','munic_no'))%>%
+  filter(meso_no== 'Norte Fluminense')%>%
+  mutate(grid=factor(grid,ordered=T,levels=c(paste0(seq(0,75,5),'-',seq(0,75,5)+4),'80+')))%>%
+  select(meso_co,meso_no,ano,grid,sex,pop)%>%
+  group_by(meso_co,meso_no,ano,grid,sex)%>%
+  summarise(pop=sum(pop,na.rm = TRUE),.groups = 'drop')%>%
+  arrange(ano,sex,grid)
+
+write_rds(pop_grid_nf,'data/processed/pop_grid_nf.rds')
+
+rm_temp()
+
+temp_ggdf<-pop_grid_nf%>%
+  group_by(ano)%>%
+  mutate(total=sum(pop,na.rm = TRUE))%>%
+  ungroup()%>%
+  mutate(rel=if_else(sex=='Homens',-pop/total,pop/total))
+
+ggplot(data=temp_ggdf,aes(x=grid,y=rel,fill=sex))+
+  geom_bar(stat='identity',position='stack')+
+  coord_flip()+
+  facet_wrap(~ano)
+
+#População por município
 pop_total_nf<-pop_munic%>%
   group_by(sit,ano)%>%
   summarise(pop=sum(pop,na.rm = TRUE),.groups = 'drop')%>%
@@ -178,8 +260,6 @@ write_rds(pop_total_nf,'data/processed/pop_total_nf.rds')
 pop_total_nf%>%
   kbl() %>%
   kable_paper(full_width = F)
-
-rm_temp
 
 
 pop_grid<-read_csv('data/raw/POP_MUNIC.csv',skip=4,na=c("", "NA",'...','-'),

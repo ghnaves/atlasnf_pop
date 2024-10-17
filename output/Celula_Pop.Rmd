@@ -25,6 +25,9 @@ library('readxl')
 library('kableExtra')
 library('scales')
 library('here')
+library('ggsci')
+library('hrbrthemes')
+library('scales')
 
 rm_temp<-function (pattern = "^temp_") {
   temp_objects <- grep(pattern, ls(envir = .GlobalEnv), value = TRUE)
@@ -39,7 +42,6 @@ rm_temp<-function (pattern = "^temp_") {
 # Célula População
 
 A população é fundamental para a compreensão da realidade social de qualquer território. Ela representa o denominador básico de todos os indicadores sociais, econômicos e ambientais. Nesse sentido, é indispensável conhecer a estrutura e dinâmica populacional para avaliar corretamente a distribuição de recursos, para a formulação de políticas públicas e para o planejamento urbano adequado. O objetivo principal dessa célula é a sistematizar e espacializar estimativas da população por município, desagregada por idade, sexo e situação de domicílio.
-
 
 # A mesorregião Norte Fluminense
 
@@ -158,12 +160,179 @@ growthratio_brrjnf%>%
   kable_paper(full_width = F) %>%
   footnote(general = "Fonte: Censos Demográficos [@ibge2023]",
            general_title = "")
+
+temp_plotdf<-growthratio_brrjnf%>%
+  filter(ut_co != 3302403)%>%
+  pivot_longer(cols=c(gr2010_2022,gr2000_2010,gr1991_2000,gr1980_1991,gr1970_1980),
+               names_to='periodo',
+               values_to='taxa')%>%
+  mutate(periodo=str_replace(periodo,"_","-"),
+         periodo=str_replace(periodo,"gr",""),
+         ut=factor(ut_co,levels=c(1,33,3302),
+                   labels=c('Brasil','Rio de Janeiro','Norte Fluminense')))
+
+temp_gg<-ggplot(temp_plotdf,aes(x=periodo,y=taxa,fill = ut))+
+  geom_col(position='dodge')+
+  labs(title='Taxa de Crescimento',
+       x='Período')+
+  scale_fill_startrek(name='Unidade\nTerritorial')+
+  scale_y_continuous(labels = percent_format(scale=100),name='Taxa de Crescimento')+
+  theme_ipsum()
+
+temp_gg
+
 ```
 
-A população da região aumentou a taxas mais relevantes a partir da década de **1980**, em decorrência das atividades de **exploração e produção de petróleo na Bacia de Campos**. Esse fenômeno contribuiu significativamente para a migração de pessoas para a região, com foco principalmente em **Macaé**, que viu sua população crescer de ```r temp_text$pop2000_macae``` habitantes em 2000 para ```r temp_text$pop2010_macae``` em 2010, registrando um acréscimo de ```r temp_diff_text$diff_1``` habitantes.
+A população da região aumentou a taxas mais relevantes a partir da década de **1980**, em decorrência das atividades de **exploração e produção de petróleo na Bacia de Campos**. Esse fenômeno contribuiu significativamente para a migração de pessoas para a região, com foco principalmente em **Macaé**, que viu sua população crescer de `r temp_text$pop2000_macae` habitantes em 2000 para `r temp_text$pop2010_macae` em 2010, registrando um acréscimo de `r temp_diff_text$diff_1` habitantes.
 
-O crescimento populacional da região no período entre 2010 e 2022 (```r temp_text$gr2010_2022_nf```) foi similar ao crescimento da população brasileira (```r temp_text$gr2010_2022_br```). De forma comparativa, a região cresceu em um ritmo forte, se comparado com a população do estado do Rio de Janeiro, cujo crescimento foi próximo a zero (```r temp_text$gr2010_2022_rj```). Esse crescimento expressivo da população na região é um reflexo da imigração, seja em busca de trabalho ou por familiares acompanhando um migrante principal. Adiconalmente, o crescimento também é consequencia do efeito indireto da imigração que são os filhos dos migrantes que nasceram no destino e que não são captados como migrantes pelos censos.
+O crescimento populacional da região no período entre 2010 e 2022 (`r temp_text$gr2010_2022_nf`) foi similar ao crescimento da população brasileira (`r temp_text$gr2010_2022_br`). De forma comparativa, a região cresceu em um ritmo forte, se comparado com a população do estado do Rio de Janeiro, cujo crescimento foi próximo a zero (`r temp_text$gr2010_2022_rj`). Esse crescimento expressivo da população na região é um reflexo da imigração, seja em busca de trabalho ou por familiares acompanhando um migrante principal. Adiconalmente, o crescimento também é consequencia do efeito indireto da imigração que são os filhos dos migrantes que nasceram no destino e que não são captados como migrantes pelos censos.
 
+## Estrutura Etária
+
+As pirâmides etárias representam a população relativa de homens e mulheres, geralmente em grupos etários quinquenais, em um determinado momento. Sua representação é um gráfico de barras distribuídas à direita e à esquerda de um eixo vertical central, com os homens representados nas barras à esquerda e as mulheres à direita. No eixo das abcissas, é representada a proporção de pessoas, e no eixo das ordenadas, os grupos de idades. A partir da análise da base e da forma das pirâmides, é possível fazer inferências sobre o crescimento populacional, comportamento da natalidade, mortalidade e migração.
+
+```{r}
+rm_temp()
+pop_grid_nf<-read_rds(here('data/processed','pop_grid_nf.rds'))
+dtb_nf<-read_rds(here('data/processed','dtb_nf.rds'))
+
+temp_ggdf<-pop_grid_nf%>%
+  group_by(ano)%>%
+  mutate(total=sum(pop,na.rm = TRUE))%>%
+  ungroup()%>%
+  mutate(rel=if_else(sex=='Homens',-pop/total,pop/total))
+
+ggplot(data=temp_ggdf,aes(x=grid,y=rel,fill=sex))+
+  geom_bar(stat='identity',position='stack')+
+  coord_flip()+
+  facet_wrap(~ano)+
+  labs(title='Pirâmides Etárias',x= 'Grupos de idade')+
+  scale_fill_manual(name='Sexo',values=rev(pal_startrek()(2)))+
+  scale_y_continuous(labels = percent_format(scale=100),
+                     name='População (%)')+
+  theme_ipsum()+
+  scale_x_discrete(
+    breaks = levels(temp_ggdf$grid)[seq(1, length(levels(temp_ggdf$grid)), by = 2)])
+
+```
+
+No caso das pirâmides etárias que representam o padrão por sexo e idade da região Norte Fluminense, nota-se que, em 1970, havia uma grande proporção de jovens abaixo de 20 anos, com uma forte diminuição relativa da população a partir dessa faixa etária. Como os maiores fluxos migratórios estão associados à migração em busca de trabalho e renda, a migração tende a ser seletiva por idade. No caso da região Norte Fluminense, a menor proporção de pessoas com mais de 30 anos pode ser associada à emigração de jovens para fora da região até meados da década de 1980. Em 1980, já se nota um pequeno arrefecimento da emigração observada na década anterior, mas é a partir do Censo de 1991 que a região passa a ser considerada receptora de pessoas em idades produtivas. Muito provavelmente, em função do aquecimento econômico na região entre as décadas de 1980 e 2000, essa imigração foi certamente associada à criação de novos postos de trabalho nas cidades de destino, especialmente em Macaé.
+
+Adicionalmente, a análise das bases de todas as pirâmides etárias indica uma progressiva queda na fecundidade e mortalidade, refletindo o avanço da transição demográfica observado em praticamente todas as regiões brasileiras. Apesar de já ser perceptível um ligeiro envelhecimento da população em 2010 e 2022, o padrão etário ainda se concentrava nas idades mais jovens. Nesse contexto, em comparação com outras regiões do país, a região Norte Fluminense, mais em função da entrada de imigrantes do que dos efeitos da transição demográfica, possuía uma alta proporção de população em idade ativa em relação à população de crianças e idosos. Nesse sentido, é possível afirmar que a região se encontra diante de uma janela de oportunidades proporcionada por um bônus demográfico devido à forte entrada de migrantes em idade ativa e uma maior proporção de pessoas jovens na população.
+
+# Os municípios da Região Norte Fluminense
+
+```{r}
+pop_brrjnf<-read_rds(here('data/processed','pop_brrjnf.rds'))
+
+temp_text<-list(
+  prop_macaeecampos=percent((pop_brrjnf%>%
+                               filter(ut_co %in% c(3302403,3301009))%>%
+                               select(total2022)%>%
+                               pull()%>%
+                               sum())/(pop_brrjnf%>%
+                                         filter(ut_co %in% c(3302))%>%
+                                         select(total2022)%>%
+                                         pull()),
+                            big.mark = ".", decimal.mark = ",", accuracy =0.01),
+  prop_campos70= percent((pop_brrjnf%>%
+                            filter(ut_co %in% c(3301009))%>%
+                            select(total1970)%>%
+                            pull()%>%
+                            sum())/(pop_brrjnf%>%
+                                      filter(ut_co %in% c(3302))%>%
+                                      select(total1970)%>%
+                                      pull()),
+                         big.mark = ".", decimal.mark = ",", accuracy =0.01),
+  prop_campos22=percent((pop_brrjnf%>%
+                           filter(ut_co %in% c(3301009))%>%
+                           select(total2022)%>%
+                           pull()%>%
+                           sum())/(pop_brrjnf%>%
+                                     filter(ut_co %in% c(3302))%>%
+                                     select(total2022)%>%
+                                     pull()),
+                        big.mark = ".", decimal.mark = ",", accuracy =0.01),
+  prop_macae70=percent((pop_brrjnf%>%
+                          filter(ut_co %in% c(3302403))%>%
+                          select(total1970)%>%
+                          pull()%>%
+                          sum())/(pop_brrjnf%>%
+                                    filter(ut_co %in% c(3302))%>%
+                                    select(total1970)%>%
+                                    pull()),
+                       big.mark = ".", decimal.mark = ",", accuracy =0.01),
+  prop_macae22=percent((pop_brrjnf%>%
+                          filter(ut_co %in% c(3302403))%>%
+                          select(total2022)%>%
+                          pull()%>%
+                          sum())/(pop_brrjnf%>%
+                                    filter(ut_co %in% c(3302))%>%
+                                    select(total2022)%>%
+                                    pull()),
+                       big.mark = ".", decimal.mark = ",", accuracy =0.01)
+)
+
+pop_brrjnf%>%
+  rename(`Unidade Territorial`=ut)%>%
+  filter(ut_co %in% c(1,33,3302,dtb_nf$munic_co))%>%
+  select(`Unidade Territorial`,total1970,total1980,total1991,total2000,total2010,total2022)%>%
+  rename(`1970`=total1970,
+         `1980`=total1980,
+         `1991`=total1991,
+         `2000`=total2000,
+         `2010`=total2010,
+         `2022`=total2022)%>%
+  mutate(ordem=case_when(
+    `Unidade Territorial`=='Brasil'~4,
+    `Unidade Territorial`=='Rio de Janeiro'~3,
+    `Unidade Territorial`=='Norte Fluminense'~2,
+    TRUE~1))%>%
+  arrange(ordem)%>%
+  select(-ordem)%>%
+  mutate(across(2:7,~if_else(is.na(.), "...",
+                             number_format(scale=1,
+                                           big.mark = ".",
+                                           decimal.mark = ",")(.))))%>%
+  kbl() %>%
+  row_spec(c(10,12), background = "grey90",bold=TRUE)%>%
+  kable_paper(full_width = F) %>%
+  footnote(general = "Fonte: Censos Demográficos [@ibge2023]",
+           general_title = "")
+```
+
+
+A região é composta por nove municípios: Carapebus, Campos dos Goytacazes, Cardoso Moreira, Conceição de Macabu, Macaé, Quissamã, São Francisco de Itabapoana, São Fidélis e São João da Barra. Em números absolutos, o município mais populoso é Campos dos Goytacazes, seguido de Macaé, que são os dois municípios mais importantes da região. Campos dos Goytacazes é o maior tanto em termos de extensão territorial quanto de população. Ele, juntamente com Macaé, concentra aproximadamente 
+```r temp_text$prop_macaeecampos``` da população total da MRNF, conforme os dados do Censo de 2022.
+
+Contudo, Campos dos Goytacazes perdeu participação na população da região Norte Fluminense ao longo do tempo. Em 1970, a participação do município na população total era de ```r temp_text$prop_campos70```, e em 2022 era de ```r temp_text$prop_campos22```. Mesmo considerando a participação de Cardoso Moreira, emancipado de Campos na década de 1990, o município continua perdendo participação. Por outro lado, Macaé aumentou sua participação na população regional, de ```r temp_text$prop_macae70``` em 1970 para```r temp_text$prop_macae22``` em 2010. Considerando a participação dos municípios emancipados (Carapebus e Quissamã), a participação de Macaé dobrou no período.
+
+```{r}
+pop_brrjnf<-read_rds(here('data/processed','pop_brrjnf.rds'))
+
+pop_brrjnf%>%
+  rename(`Unidade Territorial`=ut)%>%
+  filter(ut_co %in% dtb_nf$munic_co)%>%
+  select(`Unidade Territorial`,total1970,total1980,total1991,total2000,total2010,total2022)%>%
+  rename(`1970`=total1970,
+         `1980`=total1980,
+         `1991`=total1991,
+         `2000`=total2000,
+         `2010`=total2010,
+         `2022`=total2022)%>%
+  mutate(across(`1970`:`2022`, ~ . / sum(., na.rm = TRUE) * 100))%>%
+  mutate(across(`1970`:`2022`,~if_else(is.na(.), "...",
+                             percent_format(scale=1,
+                                           big.mark = ".",
+                                           decimal.mark = ",",
+                                           accuracy=0.1)(.))))%>%
+  kbl() %>%
+  kable_paper(full_width = F) %>%
+  footnote(general = "Fonte: Censos Demográficos [@ibge2023]",
+           general_title = "")
+
+
+```
 
 O código fonte desta página está disponíveis no repositório [ghnaves/atlasnf_pop](https://github.com/ghnaves/atlasnf_pop) do Github
 
