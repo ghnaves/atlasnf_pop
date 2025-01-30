@@ -80,6 +80,8 @@ temp_diff_text<-list(
 
 
 pop_total_nf%>%
+   mutate(across(`1970`:`2022`, 
+                 ~ comma(.x, decimal.mark = ",", big.mark = ".", accuracy = 1)))%>%
   kbl() %>%
   kable_paper(full_width = F) %>%
   footnote(general = "Fonte: Censos Demográficos [@ibge2023]",
@@ -151,14 +153,23 @@ temp_diff_text<-list(
 )
 
 
-growthratio_brrjnf%>%
-  filter(ut_co != 3302403)%>%
-  mutate(across(3:7,~percent_format(scale=100,
+growthratio_brrjnf %>%
+  filter(ut_co != 3302403) %>%
+  select(-ut_co) %>%
+  pivot_longer(cols = starts_with("gr"), 
+               names_to = "Período", 
+               values_to = "Taxa de Crescimento") %>%
+  mutate(Período = str_remove(Período, "gr") %>% 
+           str_replace("_", "-")) %>%
+  pivot_wider(names_from = ut, values_from = "Taxa de Crescimento") %>%
+  mutate(across(2:4,~percent_format(scale=100,
                                     big.mark = ".", 
                                     decimal.mark = ",")(.)))%>%
-  kbl() %>%
+  arrange(Período)%>%
+  select(Período, `Norte Fluminense`, `Rio de Janeiro`, Brasil)%>%
+  kbl(format = "html", table.attr = "border='1' cellspacing='0' cellpadding='5'") %>%
   kable_paper(full_width = F) %>%
-  footnote(general = "Fonte: Censos Demográficos [@ibge2023]",
+  footnote(general = "Fonte: Censos Demográficos (IBGE, 2023)",
            general_title = "")
 
 temp_plotdf<-growthratio_brrjnf%>%
@@ -302,13 +313,12 @@ pop_brrjnf%>%
 ```
 
 
-A região é composta por nove municípios: Carapebus, Campos dos Goytacazes, Cardoso Moreira, Conceição de Macabu, Macaé, Quissamã, São Francisco de Itabapoana, São Fidélis e São João da Barra. Em números absolutos, o município mais populoso é Campos dos Goytacazes, seguido de Macaé, que são os dois municípios mais importantes da região. Campos dos Goytacazes é o maior tanto em termos de extensão territorial quanto de população. Ele, juntamente com Macaé, concentra aproximadamente 
-```r temp_text$prop_macaeecampos``` da população total da MRNF, conforme os dados do Censo de 2022.
+A região é composta por nove municípios: Carapebus, Campos dos Goytacazes, Cardoso Moreira, Conceição de Macabu, Macaé, Quissamã, São Francisco de Itabapoana, São Fidélis e São João da Barra. Em números absolutos, o município mais populoso é Campos dos Goytacazes, seguido de Macaé, que são os dois municípios mais importantes da região. Campos dos Goytacazes é o maior tanto em termos de extensão territorial quanto de população. Ele, juntamente com Macaé, concentra aproximadamente ```r temp_text$prop_macaeecampos``` da população total da MRNF, conforme os dados do Censo de 2022.
 
 Contudo, Campos dos Goytacazes perdeu participação na população da região Norte Fluminense ao longo do tempo. Em 1970, a participação do município na população total era de ```r temp_text$prop_campos70```, e em 2022 era de ```r temp_text$prop_campos22```. Mesmo considerando a participação de Cardoso Moreira, emancipado de Campos na década de 1990, o município continua perdendo participação. Por outro lado, Macaé aumentou sua participação na população regional, de ```r temp_text$prop_macae70``` em 1970 para```r temp_text$prop_macae22``` em 2010. Considerando a participação dos municípios emancipados (Carapebus e Quissamã), a participação de Macaé dobrou no período.
 
 ```{r}
-pop_brrjnf<-read_rds(here('data/processed','pop_brrjnf.rds'))
+pop_brrjnf<-read_rds(here('data', 'processed','pop_brrjnf.rds'))
 
 pop_brrjnf%>%
   rename(`Unidade Territorial`=ut)%>%
@@ -333,6 +343,96 @@ pop_brrjnf%>%
 
 
 ```
+
+## Taxa de urbanização
+```{r}
+pop_brrjnf<-read_rds(here('data', 'processed','pop_brrjnf.rds'))
+
+pop_brrjnf%>%
+  rename(`Unidade Territorial`=ut)%>%
+  mutate(txurb1970 = urb1970/total1970,
+         txurb1980 = urb1980/total1980,
+         txurb1991 = urb1991/total1991,
+         txurb2000 = urb2000/total2000,
+         txurb2010 = urb2010/total2010,
+         txurb2022 = urb2022/total2022)%>%
+  select(`Unidade Territorial`,txurb1970,txurb1980,txurb1991,
+         txurb2000,txurb2010,txurb2022)%>%
+  rename(`1970`=txurb1970,
+         `1980`=txurb1980,
+         `1991`=txurb1991,
+         `2000`=txurb2000,
+         `2010`=txurb2010,
+         `2022`=txurb2022)%>%
+  mutate(across(`1970`:`2022`,~if_else(is.na(.), "...",
+                             percent_format(scale=100,
+                                           big.mark = ".",
+                                           decimal.mark = ",",
+                                           accuracy=0.1)(.))))%>%
+  kbl() %>%
+  kable_paper(full_width = F) %>%
+  footnote(general = "Fonte: Censos Demográficos (IBGE 2024)",
+           general_title = "")
+```
+
+
+## Taxa de crescimento dos municípios
+```{r}
+growthratio_brrjnf<-read_rds(here('data', 'processed','growthratio_brrjnf.rds'))
+
+temp_table = growthratio_brrjnf%>%
+  rename(`Unidade Territorial`=ut)%>%
+  select(`Unidade Territorial`,'gr1970_1980','gr1980_1991','gr1991_2000',
+         'gr2000_2010','gr2010_2022')%>%
+  rename_with(~ stringr::str_replace(., "gr(\\d{4})_(\\d{4})", "\\1-\\2"),
+              starts_with("gr"))%>%
+  mutate(across(`2010-2022`:`1970-1980`,~if_else(is.na(.), "...",
+                                       percent_format(
+                                         scale=100,
+                                         big.mark = ".",
+                                         decimal.mark = ",",
+                                         accuracy=0.01)(.))))
+
+temp_plot = growthratio_brrjnf%>%
+  rename(`Unidade Territorial`=ut)%>%
+  filter(!(`Unidade Territorial` %in% c('Brasil','Rio de Janeiro','Norte Fluminense')))%>%
+  select(`Unidade Territorial`,'gr1970_1980','gr1980_1991','gr1991_2000',
+         'gr2000_2010','gr2010_2022')%>%
+  rename_with(~ stringr::str_replace(., "gr(\\d{4})_(\\d{4})", "\\1-\\2"),
+              starts_with("gr"))%>%
+  pivot_longer(cols = -`Unidade Territorial`, 
+               names_to = "Período", values_to = "Crescimento")%>%
+   drop_na() 
+
+temp_gg = ggplot(temp_plot, aes(x = reorder(`Unidade Territorial`, Crescimento), 
+                    y = Crescimento, fill = Crescimento)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  facet_grid(. ~ Período) +
+  scale_fill_distiller(palette = "RdYlBu", direction = -1,
+                       labels = scales::percent_format(scale = 100)) + 
+  scale_y_percent(labels = scales::percent_format(scale = 100))+
+  theme_minimal() +
+  theme_ipsum()+
+  theme(axis.text.y = element_text(size = 10),legend.position = 'bottom') +
+  labs(x = NULL, 
+       y = "Taxa de Crescimento (%)",
+       fill = "Crescimento (%)")
+
+ggsave(here('output','plots','growthratio_munics.jpeg'),
+       plot =temp_gg,width=300,height=100,
+       units='mm',dpi=300)
+
+
+temp_table%>%
+  kbl() %>%
+  kable_paper(full_width = F) %>%
+  footnote(general = "Fonte: Censos Demográficos (IBGE 2024)",
+           general_title = "")
+
+
+```
+
 
 O código fonte desta página está disponíveis no repositório [ghnaves/atlasnf_pop](https://github.com/ghnaves/atlasnf_pop) do Github
 

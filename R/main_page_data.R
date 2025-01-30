@@ -93,33 +93,44 @@ temp_ate2010<-temp_200%>%
   rbind(temp_nf)%>%
   rbind(temp_munic)
 
-temp_4714<-read_xlsx('data/sidra.igbe.org.br/tabela4714.xlsx',range='A5:C98',
-                  col_names = c('A', 'B','total2022'),
-                  col_types=c('numeric','text','numeric'))%>%
+temp_9923<-read_xlsx('data/sidra.igbe.org.br/tabela9923.xlsx',range='A6:E37',
+                  col_names = c('A', 'B','total2022','urb2022','rur2022'),
+                  col_types=c('numeric','text',rep('numeric',3)))%>%
   left_join(dtb,by=c('A'='munic_co'))
 
-temp_nf<-temp_4714 %>%
+temp_nfrjbr<-temp_9923 %>%
   filter(meso_no=='Norte Fluminense')%>%
   group_by(meso_no) %>%
   summarise(across(starts_with(c("total", "urb", "rur")), sum, na.rm = TRUE),.groups = 'drop')%>%
   mutate(ut_co=3302)%>%
-  select(ut_co,meso_no,total2022)%>%
-  rename('ut'='meso_no')
+  rename(ut = meso_no)%>%
+  select(ut_co,ut,ends_with('2022'))%>%
+  bind_rows(temp_9923 %>%
+              filter(B=='Brasil' | B == 'Rio de Janeiro')%>%
+              mutate(ut=B,ut_co=A)%>%
+              select(ut_co,ut,ends_with('2022')))%>%
+  bind_rows(temp_9923 %>%
+              filter(meso_no %in% c('Norte Fluminense'))%>%
+              mutate(ut = munic_no,ut_co=A)%>%
+              select(ut_co,ut,ends_with(c('2022'))))
 
-temp_2022<-temp_4714%>%
-  mutate(ut = B,ut_co=A)%>%
-  select(ut_co,ut,total2022)%>%
-  rbind(temp_nf)%>%
+temp_2022<-temp_nfrjbr%>%
   mutate(ordem=case_when(ut_co==3302~3,
                          ut_co==1~1,
                          ut_co==33~2,
-                         TRUE~4))%>%
+                         TRUE~ut_co))%>%
   arrange(ordem)%>%
   select(-ordem,-ut)
   
 
 pop_brrjnf<-temp_ate2010%>%
-  inner_join(temp_2022,by='ut_co')
+  inner_join(temp_2022,by='ut_co')%>%
+  mutate(ordem=case_when(ut_co==3302~2,
+                         ut_co==1~4,
+                         ut_co==33~3,
+                         TRUE~1))%>%
+  arrange(ordem,ut_co)%>%
+  select(-ordem)
   
 write_rds(pop_brrjnf,'data/processed/pop_brrjnf.rds')
 

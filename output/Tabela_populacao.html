@@ -1,0 +1,193 @@
+<style>
+/* Aplica a cor de fundo ao cabeçalho */
+table thead tr {
+    background-color: #2f5f98 !important;
+}
+
+/* Deixa o texto do cabeçalho branco */
+table thead tr th {
+    color: #ffffff !important;
+}
+
+/* Estiliza a primeira coluna de todas as tabelas */
+table tbody td:first-child {
+    background-color: #aaebed !important;
+    font-weight: bold;
+}
+
+/* Estiliza todas as células do corpo das tabelas */
+table tbody td {
+    background-color: #ffffff !important;
+    color: black !important;
+}
+
+/* Ajustes gerais para todas as tabelas */
+table {
+    width: 80%;
+    margin: auto;
+    border-collapse: collapse;
+    border: none;
+    font-family: "Arial Narrow", arial, helvetica, sans-serif;
+}
+
+/* Remove bordas das células */
+th, td {
+    padding: 8px;
+    border: none;
+    text-align: center;
+}
+
+/* Estiliza o rodapé das tabelas */
+tfoot td {
+    text-align: left;
+    font-style: italic;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+tbody tr:last-child {
+    border-bottom: 2px solid #aaaaaa;
+    font-weight: bold;
+}
+
+/* Penúltima e antepenúltima linhas: fundo azul e negrito */
+tbody tr:nth-last-child(2), 
+tbody tr:nth-last-child(3) {
+    font-weight: bold;
+}
+
+/* Antepenúltima linha: borda superior */
+tbody tr:nth-last-child(3) {
+    border-top: 2px solid #aaaaaa;
+}
+    </style>
+
+<table cellspacing="0" cellpadding="5">
+    <thead>
+        <tr>
+            <th style="text-align: left;">Unidade Territorial</th>
+            <th>1970</th>
+            <th>1980</th>
+            <th>1991</th>
+            <th>2000</th>
+            <th>2010</th>
+            <th>2022</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="text-align: left;">Carapebus</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>8.666</td>
+            <td>13.359</td>
+            <td>13.847</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">Campos dos Goytacazes</td>
+            <td>318.806</td>
+            <td>348.542</td>
+            <td>389.109</td>
+            <td>407.168</td>
+            <td>463.731</td>
+            <td>483.540</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">Cardoso Moreira</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>12.595</td>
+            <td>12.600</td>
+            <td>12.958</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">Conceição de Macabu</td>
+            <td>11.560</td>
+            <td>13.624</td>
+            <td>16.963</td>
+            <td>18.782</td>
+            <td>21.211</td>
+            <td>21.104</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">Macaé</td>
+            <td>65.318</td>
+            <td>75.863</td>
+            <td>100.895</td>
+            <td>132.461</td>
+            <td>206.728</td>
+            <td>246.391</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">Quissamã</td>
+            <td>...</td>
+            <td>...</td>
+            <td>10.467</td>
+            <td>13.674</td>
+            <td>20.242</td>
+            <td>22.393</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">São Francisco de Itabapoana</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>41.475</td>
+            <td>41.354</td>
+            <td>45.059</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">São Fidélis</td>
+            <td>35.143</td>
+            <td>34.973</td>
+            <td>34.581</td>
+            <td>36.789</td>
+            <td>37.543</td>
+            <td>38.961</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">São João da Barra</td>
+            <td>55.619</td>
+            <td>54.588</td>
+            <td>59.561</td>
+            <td>27.682</td>
+            <td>32.747</td>
+            <td>36.573</td>
+        </tr>
+        <!-- Últimas três linhas destacadas -->
+        <tr>
+            <td style="text-align: left;">Norte Fluminense</td>
+            <td>486.446</td>
+            <td>527.590</td>
+            <td>611.576</td>
+            <td>699.292</td>
+            <td>849.515</td>
+            <td>920.826</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">Rio de Janeiro</td>
+            <td>8.994.802</td>
+            <td>11.291.631</td>
+            <td>12.807.706</td>
+            <td>14.392.106</td>
+            <td>15.989.929</td>
+            <td>16.055.174</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;">Brasil</td>
+            <td>93.134.846</td>
+            <td>119.011.052</td>
+            <td>146.825.475</td>
+            <td>169.872.856</td>
+            <td>190.755.799</td>
+            <td>203.080.756</td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="7">Fonte: Censos Demográficos (IBGE, 2023)</td>
+        </tr>
+    </tfoot>
+</table>
