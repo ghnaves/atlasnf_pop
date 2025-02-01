@@ -323,7 +323,8 @@ pop_brrjnf<-read_rds(here('data', 'processed','pop_brrjnf.rds'))
 pop_brrjnf%>%
   rename(`Unidade Territorial`=ut)%>%
   filter(ut_co %in% dtb_nf$munic_co)%>%
-  select(`Unidade Territorial`,total1970,total1980,total1991,total2000,total2010,total2022)%>%
+  select(`Unidade Territorial`,total1970,total1980,
+         total1991,total2000,total2010,total2022)%>%
   rename(`1970`=total1970,
          `1980`=total1980,
          `1991`=total1991,
@@ -331,6 +332,14 @@ pop_brrjnf%>%
          `2010`=total2010,
          `2022`=total2022)%>%
   mutate(across(`1970`:`2022`, ~ . / sum(., na.rm = TRUE) * 100))%>%
+  bind_rows(
+    tibble(`Unidade Territorial` = "Total",
+           `1970` = sum(.$`1970`, na.rm = TRUE),
+           `1980` = sum(.$`1980`, na.rm = TRUE),
+           `1991` = sum(.$`1991`, na.rm = TRUE),
+           `2000` = sum(.$`2000`, na.rm = TRUE),
+           `2010` = sum(.$`2010`, na.rm = TRUE),
+           `2022` = sum(.$`2022`, na.rm = TRUE)))%>%
   mutate(across(`1970`:`2022`,~if_else(is.na(.), "...",
                              percent_format(scale=1,
                                            big.mark = ".",
@@ -338,7 +347,7 @@ pop_brrjnf%>%
                                            accuracy=0.1)(.))))%>%
   kbl() %>%
   kable_paper(full_width = F) %>%
-  footnote(general = "Fonte: Censos Demográficos [@ibge2023]",
+  footnote(general = "Fonte: Censos Demográficos (IBGE)",
            general_title = "")
 
 
@@ -420,8 +429,8 @@ temp_gg = ggplot(temp_plot, aes(x = reorder(`Unidade Territorial`, Crescimento),
        fill = "Crescimento (%)")
 
 ggsave(here('output','plots','growthratio_munics.jpeg'),
-       plot =temp_gg,width=300,height=100,
-       units='mm',dpi=300)
+       plot =temp_gg,width=300,height=150,
+       units='mm',dpi=250)
 
 
 temp_table%>%
