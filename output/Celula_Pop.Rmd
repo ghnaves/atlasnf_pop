@@ -353,6 +353,74 @@ pop_brrjnf%>%
 
 ```
 
+O município de Campos dos Goytacazes destaca-se como a área de maior concentração populacional no Norte Fluminense, evidenciada pelas tonalidades em marrom escuro no centro-norte do mapa. Seguindo para o sudeste, observa-se uma alta densidade populacional na região de Macaé e agolerações vizinhas: Rio das Ostras, Casimiro de Abreu e Cabo Frio. A área conurbada é atribuída à alta densdade econômica especialmente devido à presença do setor petrolífero e turismo. A urbanização não se limita apenas ao centro urbano, estendendo-se ao longo da faixa costeira. A leste da região, destacam-se áreas povoadas próximas à divisa com o Espírito Santo, abrangendo os municípios de São João da Barra e São Francisco de Itabapoana. Por outro lado, o interior da região é caracterizado por áreas com baixa densidade populacional, representadas pelas tonalidades em bege claro no mapa. Essas áreas, com densidade inferior a 1 habitante por hectare, são típicas de regiões rurais ou espaços ainda não urbanizados, reforçando o contraste entre os polos urbanos e as áreas menos ocupadas do Norte Fluminense.
+
+```{r}
+library('dplyr')
+library('sf')
+library('DBI')
+library('RSQLite')
+library('readr')
+library('here')
+library('ggplot2')
+library('ggthemes')
+
+cores_dens <- 
+  colorRampPalette(c("#FAD496", "#FFA04B", '#9E2F08', "#480002"))(8)
+bins_dens <- c(0, 1, 5, 10, 25, 50, 100, 150, Inf)
+labels_dens <- c("<1", "1-5", "5-10", "10-25", "25-50", 
+                 "50-100", "100-150", ">150")
+
+pop_in_grid12sec = st_read(dsn = "data/shp/pop_densidade.gpkg", 
+                           layer = "pop_in_grid12sec")
+ruas = st_read(dsn = "data/shp/pop_densidade.gpkg", 
+               layer = "ruas")
+munis_sf = st_read(dsn = "data/shp/pop_densidade.gpkg", 
+                   layer = "munis_sf") %>%
+  mutate(muni_code7 = as.numeric(muni_code7))%>%
+  filter(muni_code7 %in% pop_brrjnf$ut_co)
+
+pop_in_grid12sec$density_category <- cut(
+  pop_in_grid12sec$density,
+  breaks = bins_dens,
+  labels = labels_dens,
+  include.lowest = TRUE,
+  right = FALSE
+)
+
+ruas =  ruas %>%
+  filter(highway %in% c('trunk'))
+
+bbox = st_bbox(munis_sf)
+
+mapa = 
+  ggplot() +
+  geom_sf(data = pop_in_grid12sec, aes(fill = density_category), color=NA) +
+  geom_sf(data=munis_sf, fill = NA, color = "grey40",linetype = "dashed")+
+  scale_fill_manual(values = cores_dens,name="Densidade (hab/ha)")+
+  geom_sf(data=ruas, color = "red",size=.0001,alpha=0.5)+
+  coord_sf(crs = 4674, expand = TRUE, datum = st_crs(4674),
+               xlim = c(bbox["xmin"], bbox["xmax"]),
+               ylim = c(bbox["ymin"], bbox["ymax"]))+
+  labs(title = 'Densidade Populacional',
+       subtitle = 'Norte Fluminense',
+    x = "Longitude",
+    y = "Latitude")+
+  theme_map() +
+    theme(
+      axis.text = element_text(size = 10),
+      axis.title = element_text(size = 12),
+      panel.grid.major = element_line(color = "gray80", linetype = "dashed"),
+      panel.background = element_rect(fill = "white"),
+      legend.position = "right")
+
+ggsave('output/plots/pop_densidade.jpeg',
+       plot = mapa,width=220,height=200,units='mm',dpi=250)
+```
+
+O padrão de ocupação no Norte Fluminense revela uma característica linear ao longo das principais rodovias, sugerindo que o crescimento urbano está associado ao acesso à infraestrutura de transporte. As rodovias funcionam como eixos estruturantes, orientando a expansão das áreas urbanizadas e facilitando a conexão entre os centros urbanos, embora sejam observados algumas áreas subpovoadas próximas a essas rodovias. Por outro lado, nas regiões onde a densidade populacional é superior a 150 habitantes por hectare, há indícios de uma possível pressão sobre a infraestrutura urbana. Esse adensamento populacional pode resultar em desafios para o sistema de transporte, saneamento básico e habitação, tornando necessária a implementação de políticas públicas voltadas para o planejamento urbano sustentável.
+
+
 ## Taxa de urbanização
 ```{r}
 pop_brrjnf<-read_rds(here('data', 'processed','pop_brrjnf.rds'))
